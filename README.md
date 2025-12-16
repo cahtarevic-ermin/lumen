@@ -1,6 +1,6 @@
-# AI Document Manager – Web
+# Lumen - AI Document Manager client app
 
-Next.js App Router frontend for the AI Document Manager MVP. It mirrors the backend roadmap (auth, document uploads, AI summaries, tagging, search, and infra) described in [`ai-docs-manager-backend/requirements/requirements.md`](../ai-docs-manager-backend/requirements/requirements.md). The site is not deployed yet; the current deliverable is a locally served landing page that communicates the vision while the core product is under construction.
+Next.js App Router frontend for the AI Document Manager MVP. It mirrors the backend roadmap (auth, document uploads, AI summaries, tagging, search, and infra) described in [`atlas/requirements/requirements.md`](https://github.com/cahtarevic-ermin/atlas/requirements/requirements.md). The site is not deployed yet; the current deliverable is a locally served landing page that communicates the vision while the core product is under construction.
 
 ## What’s in the landing page today
 
@@ -51,5 +51,5 @@ Keep new UI work inside `app/` routes. Co-locate components under `app/(group)/c
 
 ## Useful links
 
-- Backend requirements: [`ai-docs-manager-backend/requirements/requirements.md`](../ai-docs-manager-backend/requirements/requirements.md)
+- Backend requirements: [`atlas/requirements/requirements.md`](../atlas/requirements/requirements.md)
 - Contact / early access: `hello@placeholder.email`
