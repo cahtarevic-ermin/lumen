@@ -67,6 +67,10 @@ export const documentsApi = {
     return api.get<StatusResponse>(`/documents/${id}/status`);
   },
 
+	sync: async (id: string) => {
+    return api.post(`/documents/${id}/sync`);
+  },
+
   delete: async (id: string) => {
     return api.delete(`/documents/${id}`);
   },
