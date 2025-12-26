@@ -1,10 +1,11 @@
 'use client';
 
-import { FileText, Loader2, CheckCircle, XCircle, Clock, Trash2, MessageSquare } from 'lucide-react';
+import { FileText, Loader2, CheckCircle, XCircle, Clock, Trash2, MessageSquare, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { Document, DocumentStatus } from '@/types';
+import { documentsApi } from '@/lib/api';
 
 interface DocumentCardProps {
   document: Document;
@@ -38,6 +39,14 @@ const statusConfig: Record<DocumentStatus, { icon: React.ReactNode; label: strin
 
 export function DocumentCard({ document, onDelete, onChat, isDeleting }: DocumentCardProps) {
   const status = statusConfig[document.status];
+
+  const handleSync = async (id: string) => {
+    try {
+      await documentsApi.sync(id);
+    } catch (error) {
+      console.error('Failed to sync document:', error);
+    }
+  };
 
   return (
     <Card className="flex flex-col">
@@ -90,6 +99,15 @@ export function DocumentCard({ document, onDelete, onChat, isDeleting }: Documen
         >
           <MessageSquare className="mr-2 h-4 w-4" />
           Chat
+        </Button>
+
+				<Button
+          variant="ghost"
+          size="icon"
+          onClick={() => handleSync(document.id)}
+        >
+          <RefreshCw className="h-4 w-4" />
+          Sync
         </Button>
         <Button
           variant="ghost"
