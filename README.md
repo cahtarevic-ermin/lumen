@@ -1,55 +1,161 @@
-# Lumen - AI Document Manager client app
+# Lumen - AI Document Manager Frontend
 
-Next.js App Router frontend for the AI Document Manager MVP. It mirrors the backend roadmap (auth, document uploads, AI summaries, tagging, search, and infra) described in [`atlas/requirements/requirements.md`](https://github.com/cahtarevic-ermin/atlas/requirements/requirements.md). The site is not deployed yet; the current deliverable is a locally served landing page that communicates the vision while the core product is under construction.
+Next.js frontend for the AI Document Manager. Upload documents, get AI-powered summaries and classifications, and chat with your documents using RAG (Retrieval Augmented Generation).
 
-## What’s in the landing page today
+## Tech Stack
 
-- Hero + CTAs that link to the backend requirements and a placeholder inbox (`hello@placeholder.email`) for early access requests.
-- Product pillars, processing pipeline, roadmap, and tech stack sections generated directly from the requirements document so stakeholders can follow progress without opening the backend repo.
-- Copy and styling that set expectations that the UI is pre-release and meant for demos/screenshots until the first interactive features ship.
+- **Next.js 16** - App Router with React Server Components
+- **React 19** - Latest React with compiler optimizations
+- **Tailwind CSS 4** - Utility-first styling
+- **shadcn/ui** - Radix-based component library
+- **Axios** - HTTP client for API calls
+- **TypeScript** - Type safety
 
-## Project status
+## Features
 
-- ✅ Placeholder landing page aligned with backend requirements  
-- ⏳ Upcoming: auth, upload flows, searchable document workspace
+- **Document Upload** - Drag & drop zone with file validation (PDF, TXT)
+- **Document Management** - List, view status, delete documents
+- **AI Processing** - Automatic summarization and classification via Logos RAG service
+- **Chat with Documents** - Ask questions about your documents with streaming responses
+- **Dual Chat Views** - Simple (ChatGPT-style) and Split (document + chat side-by-side)
 
-## Getting started (local only)
+## Architecture
 
-**Prereqs**
-
-- Node.js 18+
-- npm (bundled with Node)
-
-```bash
-npm install
-npm run dev
+```
+Lumen (Frontend) → Atlas (NestJS Backend) → Logos (Python RAG Engine)
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) to view the latest UI. Edits to `app/page.tsx` hot-reload automatically.
+- **Lumen**: User interface, document management, chat UI
+- **Atlas**: Authentication, document metadata, API gateway to Logos
+- **Logos**: Document parsing, chunking, embeddings, vector search, LLM calls
 
-## Planned UI surface (high level)
-
-- Auth (register/login) wired to the NestJS backend
-- Document uploads using presigned URLs, with progress and status chips
-- Searchable document list with tags, filters, and summaries
-- Document detail page with preview, AI-generated summaries, and download links
-- Admin view for processing logs / task monitoring
-
-Track the authoritative scope and sequencing in the backend requirements file.
-
-## Project structure snapshot
+## Project Structure
 
 ```
 app/
-  page.tsx       # Temporary landing page using static data derived from requirements
-  globals.css    # Tailwind base + project tokens
-public/
-  next.svg, ...  # Placeholder assets (replace once design system is ready)
+├── documents/
+│   └── page.tsx           # Document list + upload page
+├── chat/
+│   └── [documentId]/
+│       └── page.tsx       # Chat with document page
+├── layout.tsx             # Root layout with providers
+├── page.tsx               # Redirect to /documents
+└── globals.css            # Tailwind styles
+
+components/
+├── ui/                    # shadcn/ui components
+├── documents/
+│   ├── upload-zone.tsx    # Drag & drop upload
+│   └── document-card.tsx  # Document list item
+└── chat/
+    ├── message.tsx        # Chat message bubble
+    ├── chat-simple.tsx    # Simple chat view
+    └── chat-split.tsx     # Split view (doc + chat)
+
+contexts/
+└── auth-context.tsx       # Auth state management
+
+lib/
+├── api.ts                 # Axios client + API functions
+└── utils.ts               # Utility functions
+
+types/
+└── index.ts               # TypeScript types
 ```
 
-Keep new UI work inside `app/` routes. Co-locate components under `app/(group)/components/` once we add additional pages.
+## Getting Started
 
-## Useful links
+### Prerequisites
 
-- Backend requirements: [`atlas/requirements/requirements.md`](../atlas/requirements/requirements.md)
-- Contact / early access: `hello@placeholder.email`
+- Node.js 18+
+- Atlas backend running on `http://localhost:3000`
+- Logos RAG service running on `http://localhost:8000`
+
+### Installation
+
+```bash
+# Install dependencies
+npm install
+
+# Create environment file
+cp .env.example .env.local
+```
+
+### Environment Variables
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+### Development
+
+```bash
+npm run dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000) (Note: Next.js defaults to port 3000, you may need to use 3001 if Atlas is running)
+
+### Running the Full Stack
+
+```bash
+# Terminal 1: Logos (RAG Engine)
+cd ~/Documents/projects/logos
+docker compose up -d
+
+# Terminal 2: Atlas (Backend)
+cd ~/Documents/projects/atlas
+npm run start:dev
+
+# Terminal 3: Lumen (Frontend)
+cd ~/Documents/projects/lumen
+npm run dev -- -p 3001  # Use port 3001 to avoid conflict with Atlas
+```
+
+## API Endpoints Used
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/documents/upload` | POST | Upload a document |
+| `/documents` | GET | List user's documents |
+| `/documents/:id` | GET | Get document details |
+| `/documents/:id/status` | GET | Get processing status |
+| `/documents/:id` | DELETE | Delete a document |
+| `/chat` | POST | Chat with document (SSE stream) |
+
+## Authentication
+
+Currently using localStorage for JWT token storage. Set the token manually for testing:
+
+```javascript
+localStorage.setItem('access_token', 'your-jwt-token-here');
+```
+
+To get a token, register/login via Atlas API:
+
+```bash
+# Register
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "password123", "name": "Test User"}'
+
+# Login
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com", "password": "password123"}'
+```
+
+## Scripts
+
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run lint     # Run ESLint
+```
+
+## Related Projects
+
+- **[Atlas](../atlas)** - NestJS backend API
+- **[Logos](../logos)** - Python RAG engine (FastAPI + LangChain + pgvector)
