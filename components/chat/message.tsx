@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { User, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface MessageProps {
   role: 'user' | 'assistant';
@@ -30,12 +31,10 @@ export function Message({ role, content, isStreaming }: MessageProps) {
           {isUser ? 'You' : 'Assistant'}
         </p>
         <div className="prose prose-sm dark:prose-invert max-w-none">
-          <p className="whitespace-pre-wrap">
-            {content}
-            {isStreaming && (
-              <span className="ml-1 inline-block h-4 w-1 animate-pulse bg-foreground" />
-            )}
-          </p>
+          <ReactMarkdown>{content}</ReactMarkdown>
+          {isStreaming && (
+            <span className="ml-1 inline-block h-4 w-1 animate-pulse bg-foreground" />
+          )}
         </div>
       </div>
     </div>

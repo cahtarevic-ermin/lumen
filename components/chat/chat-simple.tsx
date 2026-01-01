@@ -22,14 +22,12 @@ export function ChatSimple({
   streamingContent,
 }: ChatSimpleProps) {
   const [input, setInput] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);  // Changed from scrollRef
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -48,9 +46,9 @@ export function ChatSimple({
   };
 
   return (
-    <div className="flex h-full flex-col">
+		<div className="flex h-full flex-col min-h-0">
       {/* Messages Area */}
-      <ScrollArea className="flex-1" ref={scrollRef}>
+      <ScrollArea className="flex-1 min-h-0">  {/* Added min-h-0, removed ref */}
         <div className="flex flex-col">
           {messages.length === 0 ? (
             <div className="flex h-full items-center justify-center p-8 text-center">
@@ -77,6 +75,8 @@ export function ChatSimple({
               isStreaming
             />
           )}
+          {/* Scroll anchor at the bottom */}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
