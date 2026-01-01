@@ -27,12 +27,10 @@ export function ChatSplit({
   streamingContent,
 }: ChatSplitProps) {
   const [input, setInput] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingContent]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,9 +49,9 @@ export function ChatSplit({
   };
 
   return (
-    <div className="flex h-full gap-4">
+    <div className="flex h-full gap-4 min-h-0">
       {/* Document Panel */}
-      <Card className="w-1/2 flex flex-col">
+      <Card className="w-1/2 flex flex-col min-h-0"> 
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-muted p-2">
@@ -99,7 +97,7 @@ export function ChatSplit({
           </p>
         </div>
 
-        <ScrollArea className="flex-1" ref={scrollRef}>
+        <ScrollArea className="flex-1 min-h-0">  {/* Added min-h-0, removed ref */}
           <div className="flex flex-col">
             {messages.length === 0 ? (
               <div className="flex items-center justify-center p-8 text-center">
@@ -123,6 +121,8 @@ export function ChatSplit({
                 isStreaming
               />
             )}
+            {/* Scroll anchor at the bottom */}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
