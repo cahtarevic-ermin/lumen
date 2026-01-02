@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { Document, StatusResponse, ChatHistoryResponse } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -85,21 +86,27 @@ export const chatApi = {
   sendMessage: async (
     documentId: string,
     message: string,
-    conversationHistory: { role: string; content: string }[] = []
   ) => {
     return api.post(
       '/chat',
       {
         document_id: documentId,
         message,
-        conversation_history: conversationHistory,
+        // No longer need conversation_history - backend loads from DB
       },
       {
         responseType: 'stream',
       }
     );
   },
-};
 
-// Import Document type
-import type { Document, StatusResponse } from '@/types';
+  // New: Get chat history
+  getHistory: async (documentId: string) => {
+    return api.get<ChatHistoryResponse>(`/chat/history/${documentId}`);
+  },
+
+  // New: Clear chat history
+  clearHistory: async (documentId: string) => {
+    return api.delete(`/chat/history/${documentId}`);
+  },
+};

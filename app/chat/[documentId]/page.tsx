@@ -2,11 +2,11 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, LayoutGrid, MessageSquare } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChatSimple } from '@/components/chat/chat-simple';
 import { ChatSplit } from '@/components/chat/chat-split';
-import { documentsApi, api } from '@/lib/api';
+import { documentsApi, chatApi } from '@/lib/api';
 import type { Document, ChatMessage } from '@/types';
 
 type ViewMode = 'simple' | 'split';
@@ -27,13 +27,20 @@ export default function ChatPage({
   const [viewMode, setViewMode] = useState<ViewMode>('simple');
   const [error, setError] = useState<string | null>(null);
 
+  // Load document and chat history
   useEffect(() => {
-    const fetchDocument = async () => {
+    const fetchData = async () => {
       try {
-        const response = await documentsApi.get(documentId);
-        setDocument(response.data);
+        // Fetch document and chat history in parallel
+        const [docResponse, historyResponse] = await Promise.all([
+          documentsApi.get(documentId),
+          chatApi.getHistory(documentId),
+        ]);
         
-        if (response.data.status !== 'COMPLETED') {
+        setDocument(docResponse.data);
+        setMessages(historyResponse.data.messages);
+        
+        if (docResponse.data.status !== 'COMPLETED') {
           setError('Document is not ready for chat');
         }
       } catch (err) {
@@ -44,10 +51,20 @@ export default function ChatPage({
       }
     };
 
-    fetchDocument();
+    fetchData();
   }, [documentId]);
 
+  const handleClearHistory = async () => {
+    try {
+      await chatApi.clearHistory(documentId);
+      setMessages([]);
+    } catch (err) {
+      console.error('Failed to clear history:', err);
+    }
+  };
+
   const handleSendMessage = async (content: string) => {
+    // Optimistic update for user message
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -71,10 +88,7 @@ export default function ChatPage({
           body: JSON.stringify({
             document_id: documentId,
             message: content,
-            conversation_history: messages.map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
+            // No need to send conversation_history - backend loads from DB
           }),
         }
       );
@@ -128,7 +142,8 @@ export default function ChatPage({
       }
     } catch (err) {
       console.error('Chat error:', err);
-      // Add error message
+      // Remove the optimistic user message and show error
+      setMessages((prev) => prev.slice(0, -1));
       setMessages((prev) => [
         ...prev,
         {
@@ -177,6 +192,18 @@ export default function ChatPage({
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Clear History Button */}
+          {messages.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearHistory}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Clear
+            </Button>
+          )}
           <Button
             variant={viewMode === 'simple' ? 'default' : 'outline'}
             size="sm"
