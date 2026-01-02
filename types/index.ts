@@ -42,3 +42,17 @@ export interface AuthTokens {
   access_token: string;
   refresh_token: string;
 }
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  chunk_ids?: string[];
+  created_at?: string;
+}
+
+export interface ChatHistoryResponse {
+  session_id: string;
+  document_id: string;
+  messages: ChatMessage[];
+}
